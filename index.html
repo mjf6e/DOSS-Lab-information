@@ -757,7 +757,7 @@ const setActiveNav = (route) => {
 
 function renderHome() {
   setActiveNav("home");
-  const totalPeople = DATA.labs.reduce((s, l) => s + l.personnel.length, 0);
+  const totalPeople = DATA.labs.reduce((s, l) => s + l.personnel.filter(p => p.name).length, 0);
   const totalLabs = DATA.labs.length;
   const totalEquip = allEquipment().length;
 
@@ -765,7 +765,7 @@ function renderHome() {
 
   const hero = el("section", { class: "hero" }, [
     el("div", { class: "hero-eyebrow" }, "University of Virginia · School of Medicine"),
-    el("h1", { html: 'Find who&rsquo;s doing what across <em>Surgical Sciences.</em>' }),
+    el("h1", { html: 'Find who&rsquo;s doing what across <em>Surgical&nbsp;Sciences.</em>' }),
     el("p", { class: "hero-lede" }, DATA.subtitle),
     el("div", { class: "search-hero" }, [
       el("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round",
@@ -822,10 +822,11 @@ function renderHome() {
       }
     }
     tile.appendChild(photosDiv);
+    const nNamed = lab.personnel.filter(p => p.name).length;
     tile.appendChild(el("div", { class: "lab-tile-body" }, [
       el("div", { class: "lab-tile-name" }, lab.display_name),
       el("div", { class: "lab-tile-meta" },
-        lab.personnel.length + (lab.personnel.length === 1 ? " researcher" : " researchers")),
+        nNamed + (nNamed === 1 ? " researcher" : " researchers")),
     ]));
     grid.appendChild(tile);
   }
@@ -836,7 +837,7 @@ function renderDirectory() {
   setActiveNav("directory");
   const { params } = parseHash();
   const initialQuery = params.get("q") || "";
-  const people = allPersonnel();
+  const people = allPersonnel().filter(p => p.name);
 
   app.innerHTML = "";
 
@@ -850,7 +851,7 @@ function renderDirectory() {
     html: '<circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>' });
   const input = el("input", {
     type: "search",
-    placeholder: "Search 51 researchers…",
+    placeholder: "Search 42 researchers…",
     value: initialQuery,
     "aria-label": "Filter directory",
   });
@@ -1024,6 +1025,7 @@ function renderLab(slug) {
       ]));
     }
   }
+  const namedPersonnel = lab.personnel.filter(p => p.name);
   const nEquipRows = lab.personnel.filter(p => p.assets).length;
   const hero = el("div", { class: "lab-hero" }, [
     photosEl,
@@ -1032,7 +1034,7 @@ function renderLab(slug) {
       el("h1", {}, lab.display_name),
       el("div", { class: "lab-stats" }, [
         el("div", {}, [
-          el("strong", {}, String(lab.personnel.length)),
+          el("strong", {}, String(namedPersonnel.length)),
           "Personnel",
         ]),
         el("div", {}, [
@@ -1047,15 +1049,15 @@ function renderLab(slug) {
   // Personnel
   app.appendChild(el("div", { class: "section-heading" }, [
     el("h2", {}, "Personnel"),
-    el("span", { class: "count" }, String(lab.personnel.length)),
+    el("span", { class: "count" }, String(namedPersonnel.length)),
   ]));
-  if (lab.personnel.length === 0) {
+  if (namedPersonnel.length === 0) {
     app.appendChild(el("div", { class: "empty-lab-note" },
       "No personnel entries yet — this lab profile is being populated."));
     return;
   }
   const list = el("div", { class: "personnel-list" });
-  for (const p of lab.personnel) {
+  for (const p of namedPersonnel) {
     const nameDisplay = p.name || "(lab-wide / unattributed)";
     const nameCls = p.name ? "result-name" : "result-name muted";
     const card = el("div", { class: "person-card" });
