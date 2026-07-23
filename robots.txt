@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mjf6e.github.io/DOSS-Lab-information/sitemap.xml
